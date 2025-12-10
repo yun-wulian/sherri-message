@@ -379,7 +379,87 @@ let hotkeyConfig = {
   alt: false
 };
 
-// 发送 Sherri 消息的核心逻辑
+// 获取当前聊天对象的 peer (来自 Euphony)
+function getCurrentPeer() {
+  const contact = app?.__vue_app__?.config?.globalProperties?.$store?.state?.common_Aio?.curAioData;
+  const uin = contact?.header?.uin;
+  const uid = contact?.header?.uid;
+  const chatType = contact?.chatType;
+
+  if (!chatType) return null;
+
+  // chatType 1 = 好友, 2 = 群聊
+  if (chatType === 1) {
+    return { chatType: 1, peerUid: uid, guildId: '' };
+  } else if (chatType === 2) {
+    return { chatType: 2, peerUid: uin, guildId: '' };
+  }
+  return null;
+}
+
+// 构建图片消息元素 (来自 Euphony Image.toElement)
+async function buildImageElement(imagePath) {
+  const invokeNative = window.sherri_message.invokeNative;
+
+  const fileMd5 = await invokeNative('ns-FsApi', 'getFileMd5', false, imagePath);
+  const imageSize = await invokeNative('ns-FsApi', 'getImageSizeFromPath', false, imagePath);
+  const fileSize = await invokeNative('ns-FsApi', 'getFileSize', false, imagePath);
+
+  const cachePath = await invokeNative('ns-ntApi', 'nodeIKernelMsgService/getRichMediaFilePathForGuild', false, {
+    path_info: {
+      md5HexStr: fileMd5,
+      fileName: fileMd5,
+      elementType: 2,
+      elementSubType: 0,
+      thumbSize: 0,
+      needCreate: true,
+      downloadType: 1,
+      file_uuid: ''
+    }
+  });
+
+  await invokeNative('ns-FsApi', 'copyFile', false, {
+    fromPath: imagePath,
+    toPath: cachePath
+  });
+
+  return {
+    elementId: '',
+    elementType: 2,
+    picElement: {
+      md5HexStr: fileMd5,
+      fileSize,
+      picWidth: imageSize.width,
+      picHeight: imageSize.height,
+      fileName: fileMd5,
+      sourcePath: cachePath,
+      original: true,
+      picType: 1001,
+      picSubType: 0,
+      fileUuid: '',
+      fileSubId: '',
+      thumbFileSize: 0,
+      summary: '',
+    }
+  };
+}
+
+// 发送消息 (来自 Euphony Contact.sendMessage)
+async function sendMessageNative(peer, msgElements) {
+  const invokeNative = window.sherri_message.invokeNative;
+  const msgId = `7${Array.from({ length: 18 }, () => Math.floor(Math.random() * 10)).join('')}`;
+
+  await invokeNative('ns-ntApi', 'nodeIKernelMsgService/sendMsg', false, {
+    msgId,
+    peer,
+    msgElements,
+    msgAttributeInfos: new Map()
+  });
+
+  return msgId;
+}
+
+// 发送 Sherri 消息的核心逻辑 (使用 Euphony 风格 API)
 async function sendSherriMessage() {
   const text = getInputText();
   if (!text) {
@@ -387,58 +467,49 @@ async function sendSherriMessage() {
     return;
   }
 
+  let tempFilePath = null;
+
   try {
     showToast('正在生成图片...', 'info');
     const canvas = await generateImage(text);
 
-    // 将 canvas 转为 Blob
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    // 获取当前聊天 peer
+    const peer = getCurrentPeer();
+    if (!peer) {
+      showToast('无法获取当前聊天对象', 'error');
+      return;
+    }
 
-    // 复制到剪贴板
-    await navigator.clipboard.write([
-      new ClipboardItem({ 'image/png': blob })
-    ]);
+    // 将 canvas 转为 base64
+    const base64Data = canvas.toDataURL('image/png');
+
+    // 保存为临时文件
+    tempFilePath = await window.sherri_message.saveTempImage(base64Data);
+    if (!tempFilePath) {
+      showToast('保存临时图片失败', 'error');
+      return;
+    }
+
+    // 构建图片元素
+    const imageElement = await buildImageElement(tempFilePath);
+
+    // 发送消息
+    await sendMessageNative(peer, [imageElement]);
 
     // 清空输入框
     clearInput();
 
-    // 等待一小段时间确保剪贴板写入完成
-    await new Promise(r => setTimeout(r, 100));
-
-    // 模拟粘贴到编辑器
-    const editor = document.querySelector('.ck.ck-content.ck-editor__editable');
-    if (editor) {
-      editor.focus();
-
-      // 创建粘贴事件
-      const pasteEvent = new ClipboardEvent('paste', {
-        bubbles: true,
-        cancelable: true,
-        clipboardData: new DataTransfer()
-      });
-
-      // 添加图片到 clipboardData
-      pasteEvent.clipboardData.items.add(new File([blob], 'sherri.png', { type: 'image/png' }));
-
-      editor.dispatchEvent(pasteEvent);
-
-      // 等待图片加载到编辑器
-      await new Promise(r => setTimeout(r, 500));
-
-      // 自动点击发送按钮
-      const sendBtn = document.querySelector('.send-btn-wrap .send-btn, .send-msg');
-      if (sendBtn) {
-        sendBtn.click();
-        showToast('图片已发送', 'success');
-      } else {
-        showToast('图片已粘贴，请点击发送', 'success');
-      }
-    } else {
-      showToast('图片已复制到剪贴板，请 Ctrl+V 粘贴发送', 'success');
-    }
+    showToast('图片已发送', 'success');
   } catch (err) {
     console.error('[sherri-message] 错误:', err);
-    showToast('生成失败: ' + err.message, 'error');
+    showToast('发送失败: ' + err.message, 'error');
+  } finally {
+    // 延迟删除临时文件 (给 QQ 一些时间处理)
+    if (tempFilePath) {
+      setTimeout(() => {
+        window.sherri_message.deleteTempFile(tempFilePath);
+      }, 5000);
+    }
   }
 }
 
