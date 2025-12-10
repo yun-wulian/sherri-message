@@ -51,7 +51,7 @@ LiteLoaderQQNT 插件 - 将文字消息转换为「魔女审判」风格图片�
 - 字体大小范围 (最大/最小)
 - 预览测试功能
 
-## 截图
+## 图例
 
 ![preview](placeholder.png)
 
