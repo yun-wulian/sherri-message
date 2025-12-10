@@ -1,39 +1,39 @@
 const g = [];
-function i(e, ...t) {
-  const o = (/* @__PURE__ */ new Date()).toLocaleTimeString("zh-CN", { hour12: !1 }), r = t.map((a) => {
-    if (typeof a == "object")
+function i(e, ...r) {
+  const o = (/* @__PURE__ */ new Date()).toLocaleTimeString("zh-CN", { hour12: !1 }), t = r.map((l) => {
+    if (typeof l == "object")
       try {
-        return JSON.stringify(a, null, 0);
+        return JSON.stringify(l, null, 0);
       } catch {
-        return String(a);
+        return String(l);
       }
-    return String(a);
+    return String(l);
   }).join(" ");
-  for (g.push({ time: o, level: e, message: r }); g.length > 100; )
+  for (g.push({ time: o, level: e, message: t }); g.length > 100; )
     g.shift();
-  (e === "error" ? console.error : e === "warn" ? console.warn : console.log)("[sherri-message]", ...t), S();
+  (e === "error" ? console.error : e === "warn" ? console.warn : console.log)("[sherri-message]", ...r), G();
 }
-function S() {
+function G() {
   try {
     const o = window.sherri_message?.getPreloadLogs?.() || [];
-    for (const r of o)
-      g.push({ time: "", level: "info", message: r });
+    for (const t of o)
+      g.push({ time: "", level: "info", message: t });
     for (; g.length > 100; )
       g.shift();
   } catch {
   }
   const e = document.getElementById("sherri-debug-logs");
   if (!e) return;
-  const t = {
+  const r = {
     info: "#333",
     warn: "#f59e0b",
     error: "#ef4444"
   };
-  e.innerHTML = g.map((o) => o.time === "" ? `<div style="color: #0066cc; margin-bottom: 2px; word-break: break-all;">${o.message}</div>` : `<div style="color: ${t[o.level]}; margin-bottom: 2px; word-break: break-all;">
+  e.innerHTML = g.map((o) => o.time === "" ? `<div style="color: #0066cc; margin-bottom: 2px; word-break: break-all;">${o.message}</div>` : `<div style="color: ${r[o.level]}; margin-bottom: 2px; word-break: break-all;">
       <span style="color: #888;">[${o.time}]</span> ${o.message}
     </div>`).join(""), e.scrollTop = e.scrollHeight;
 }
-const Q = /* @__PURE__ */ new Set([
+const U = /* @__PURE__ */ new Set([
   "dep",
   "__v_raw",
   "__v_skip",
@@ -49,39 +49,39 @@ const Q = /* @__PURE__ */ new Set([
   "parent",
   "provides"
 ]);
-function K(e, t, o = "app") {
+function Q(e, r, o = "app") {
   if (!e || typeof e != "object") return null;
-  const r = (s) => s !== null && typeof s == "object", n = /* @__PURE__ */ new WeakSet(), a = [
+  const t = (a) => a !== null && typeof a == "object", n = /* @__PURE__ */ new WeakSet(), l = [
     { obj: e, pathSegments: [] }
   ];
   n.add(e);
-  const l = (s) => /^\d+$/.test(s) ? `[${s}]` : /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(s) ? `.${s}` : `['${s.replace(/'/g, "\\'")}']`;
-  for (let s = 0; s < a.length; s++) {
-    const { obj: d, pathSegments: p } = a[s];
-    if (r(d) && Object.prototype.hasOwnProperty.call(d, t)) {
-      const u = d[t];
-      return { path: o + p.map(l).join("") + l(t), value: u, parent: d };
+  const s = (a) => /^\d+$/.test(a) ? `[${a}]` : /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(a) ? `.${a}` : `['${a.replace(/'/g, "\\'")}']`;
+  for (let a = 0; a < l.length; a++) {
+    const { obj: d, pathSegments: p } = l[a];
+    if (t(d) && Object.prototype.hasOwnProperty.call(d, r)) {
+      const f = d[r];
+      return { path: o + p.map(s).join("") + s(r), value: f, parent: d };
     }
-    const f = Object.keys(d);
-    for (let u = 0; u < f.length; u++) {
-      const y = f[u];
-      if (Q.has(y)) continue;
-      const x = d[y];
-      if (r(x) && !n.has(x)) {
-        n.add(x);
-        const w = p.length ? p.slice() : [];
-        w.push(y), a.push({ obj: x, pathSegments: w });
+    const u = Object.keys(d);
+    for (let f = 0; f < u.length; f++) {
+      const y = u[f];
+      if (U.has(y)) continue;
+      const m = d[y];
+      if (t(m) && !n.has(m)) {
+        n.add(m);
+        const S = p.length ? p.slice() : [];
+        S.push(y), l.push({ obj: m, pathSegments: S });
       }
     }
   }
   return null;
 }
 let k = null, T = null;
-const J = [];
-function B() {
-  const e = K(app, "curAioData");
+const K = [];
+function z() {
+  const e = Q(app, "curAioData");
   if (!e?.value || !e.value.chatType) {
-    setTimeout(B, 500), i("info", "等待 curAioData 初始化...");
+    setTimeout(z, 500), i("info", "等待 curAioData 初始化...");
     return;
   }
   i("info", "找到 curAioData:", e.path), k = e.value, Object.defineProperty(e.parent, "curAioData", {
@@ -90,26 +90,23 @@ function B() {
     get() {
       return k;
     },
-    set(t) {
-      i("info", "curAioData 更新:", t), k = t, I();
+    set(r) {
+      i("info", "curAioData 更新:", r), k = r, $();
     }
-  }), I();
+  }), $();
 }
-function I() {
+function $() {
   k && (T = {
     chatType: k.chatType,
     peerUid: k.header?.uid || "",
     guildId: ""
-  }, i("info", "peer 更新:", T), J.forEach((e) => {
+  }, i("info", "peer 更新:", T), K.forEach((e) => {
     e(T);
   }));
 }
-function V() {
-  return T;
-}
-const O = typeof LiteLoader < "u" && LiteLoader.plugins["sherri-message"]?.path?.plugin || "";
-let q = !1;
-const $ = "SherriFont", c = {
+const F = typeof LiteLoader < "u" && LiteLoader.plugins["sherri-message"]?.path?.plugin || "";
+let C = !1;
+const q = "SherriFont", c = {
   canvasWidth: 2400,
   canvasHeight: 900,
   bgCount: 16,
@@ -130,96 +127,96 @@ const $ = "SherriFont", c = {
   maxFontSize: 140,
   minFontSize: 20,
   get fontFamily() {
-    return q ? `${$}, Microsoft YaHei, sans-serif` : "Microsoft YaHei, sans-serif";
+    return C ? `${q}, Microsoft YaHei, sans-serif` : "Microsoft YaHei, sans-serif";
   }
 };
-async function Z() {
-  if (q) return;
-  const t = `local:///${O.replace(/\\/g, "/")}/dist/assets/font3.ttf`;
+async function J() {
+  if (C) return;
+  const r = `local:///${F.replace(/\\/g, "/")}/dist/assets/font3.ttf`;
   if (!document.getElementById("sherri-font-style")) {
     const o = document.createElement("style");
     o.id = "sherri-font-style", o.textContent = `
       @font-face {
-        font-family: '${$}';
-        src: url('${t}') format('truetype');
+        font-family: '${q}';
+        src: url('${r}') format('truetype');
         font-weight: normal;
         font-style: normal;
       }
     `, document.head.appendChild(o);
   }
   try {
-    const o = new FontFace($, `url('${t}')`);
-    await o.load(), document.fonts.add(o), q = !0, i("info", "自定义字体加载成功");
+    const o = new FontFace(q, `url('${r}')`);
+    await o.load(), document.fonts.add(o), C = !0, i("info", "自定义字体加载成功");
   } catch (o) {
-    i("warn", "FontFace 加载失败:", o), q = !0;
+    i("warn", "FontFace 加载失败:", o), C = !0;
   }
   try {
-    await document.fonts.load(`72px ${$}`);
+    await document.fonts.load(`72px ${q}`);
   } catch {
     i("warn", "字体等待失败");
   }
 }
-function E(e) {
-  return new Promise((t, o) => {
-    const r = new Image();
-    r.crossOrigin = "anonymous", r.onload = () => t(r), r.onerror = o, r.src = e;
+function L(e) {
+  return new Promise((r, o) => {
+    const t = new Image();
+    t.crossOrigin = "anonymous", t.onload = () => r(t), t.onerror = o, t.src = e;
   });
 }
-function z(e, t, o, r) {
-  e.font = `${r}px ${c.fontFamily}`;
-  const n = [], a = t.split(`
+function I(e, r, o, t) {
+  e.font = `${t}px ${c.fontFamily}`;
+  const n = [], l = r.split(`
 `);
-  for (const l of a) {
-    if (l === "") {
+  for (const s of l) {
+    if (s === "") {
       n.push("");
       continue;
     }
-    let s = "";
-    for (const d of l) {
-      const p = s + d;
-      e.measureText(p).width > o && s !== "" ? (n.push(s), s = d) : s = p;
+    let a = "";
+    for (const d of s) {
+      const p = a + d;
+      e.measureText(p).width > o && a !== "" ? (n.push(a), a = d) : a = p;
     }
-    s && n.push(s);
+    a && n.push(a);
   }
   return n;
 }
-function ee(e, t, o, r, n, a) {
-  for (let l = n; l >= a; l--) {
-    const s = z(e, t, o, l);
-    if (s.length * l * c.lineSpacing <= r)
-      return { fontSize: l, lines: s };
+function V(e, r, o, t, n, l) {
+  for (let s = n; s >= l; s--) {
+    const a = I(e, r, o, s);
+    if (a.length * s * c.lineSpacing <= t)
+      return { fontSize: s, lines: a };
   }
-  return { fontSize: a, lines: z(e, t, o, a) };
+  return { fontSize: l, lines: I(e, r, o, l) };
 }
-function te(e) {
-  const t = [];
-  let o = !1, r = "";
+function Z(e) {
+  const r = [];
+  let o = !1, t = "";
   for (const n of e)
-    n === "[" || n === "【" ? (r && t.push({ text: r, highlight: o }), t.push({ text: n, highlight: !0 }), r = "", o = !0) : n === "]" || n === "】" ? (r && t.push({ text: r, highlight: !0 }), t.push({ text: n, highlight: !0 }), r = "", o = !1) : r += n;
-  return r && t.push({ text: r, highlight: o }), t;
+    n === "[" || n === "【" ? (t && r.push({ text: t, highlight: o }), r.push({ text: n, highlight: !0 }), t = "", o = !0) : n === "]" || n === "】" ? (t && r.push({ text: t, highlight: !0 }), r.push({ text: n, highlight: !0 }), t = "", o = !1) : t += n;
+  return t && r.push({ text: t, highlight: o }), r;
 }
-function re(e, t, o) {
+function ee(e, r, o) {
   for (const n of c.roleNameChars) {
-    const { char: a, x: l, y: s, fontSize: d, color: p } = n;
+    const { char: l, x: s, y: a, fontSize: d, color: p } = n;
     e.font = `${d}px ${c.fontFamily}`, e.textAlign = "left", e.textBaseline = "top";
-    const f = l + t, u = s + o;
-    e.fillStyle = c.shadowColor, e.fillText(a, f + 2, u + 2), e.fillStyle = `rgb(${p[0]}, ${p[1]}, ${p[2]})`, e.fillText(a, f, u);
+    const u = s + r, f = a + o;
+    e.fillStyle = c.shadowColor, e.fillText(l, u + 2, f + 2), e.fillStyle = `rgb(${p[0]}, ${p[1]}, ${p[2]})`, e.fillText(l, u, f);
   }
 }
-function oe(e, t, o, r) {
-  let n = r.top + o;
+function te(e, r, o, t) {
+  let n = t.top + o;
   e.font = `${o}px ${c.fontFamily}`, e.textBaseline = "top", e.textAlign = "left";
-  for (const a of t) {
-    let l = r.left;
-    const s = te(a);
-    for (const d of s) {
+  for (const l of r) {
+    let s = t.left;
+    const a = Z(l);
+    for (const d of a) {
       const p = d.highlight ? c.bracketColor : c.textColor;
-      e.fillStyle = c.shadowColor, e.fillText(d.text, l + c.shadowOffset, n + c.shadowOffset), e.fillStyle = p, e.fillText(d.text, l, n), l += e.measureText(d.text).width;
+      e.fillStyle = c.shadowColor, e.fillText(d.text, s + c.shadowOffset, n + c.shadowOffset), e.fillStyle = p, e.fillText(d.text, s, n), s += e.measureText(d.text).width;
     }
     n += o * c.lineSpacing;
   }
 }
-async function ne() {
+async function re() {
   try {
     if (typeof window.sherri_message < "u")
       return await window.sherri_message.getConfig();
@@ -228,44 +225,44 @@ async function ne() {
   }
   return {};
 }
-async function M(e, t = {}) {
-  await Z();
+async function O(e, r = {}) {
+  await J();
   const o = document.createElement("canvas");
   o.width = c.canvasWidth, o.height = c.canvasHeight;
-  const r = o.getContext("2d"), a = `local:///${O.replace(/\\/g, "/")}/dist/assets`;
+  const t = o.getContext("2d"), l = `local:///${F.replace(/\\/g, "/")}/dist/assets`;
   try {
-    const l = Math.floor(Math.random() * c.bgCount) + 1, s = await E(`${a}/background/c${l}.png`);
-    r.drawImage(s, 0, 0, c.canvasWidth, c.canvasHeight);
-    const d = Math.floor(Math.random() * c.avatarCount) + 1, p = await E(`${a}/sherri/sherri (${d}).png`), y = Math.min(700 / p.width, 850 / p.height), x = p.width * y, w = p.height * y, H = 20, D = c.canvasHeight - w;
-    r.drawImage(p, H, D, x, w);
-    const X = t.roleOffsetX || 0, N = t.roleOffsetY || 0;
-    re(r, X, N);
-    const v = {
-      left: t.textLeft ?? c.textArea.left,
-      top: t.textTop ?? c.textArea.top,
-      right: t.textRight ?? c.textArea.right,
-      bottom: t.textBottom ?? c.textArea.bottom
-    }, Y = v.right - v.left, j = v.bottom - v.top, R = t.maxFontSize ?? c.maxFontSize, W = t.minFontSize ?? c.minFontSize, { fontSize: U, lines: G } = ee(r, e, Y, j, R, W);
-    oe(r, G, U, v);
-    const m = document.createElement("canvas");
-    return m.width = Math.round(c.canvasWidth * 0.7), m.height = Math.round(c.canvasHeight * 0.7), m.getContext("2d").drawImage(o, 0, 0, m.width, m.height), m;
-  } catch (l) {
-    throw i("error", "生成图片失败:", l), l;
+    const s = Math.floor(Math.random() * c.bgCount) + 1, a = await L(`${l}/background/c${s}.png`);
+    t.drawImage(a, 0, 0, c.canvasWidth, c.canvasHeight);
+    const d = Math.floor(Math.random() * c.avatarCount) + 1, p = await L(`${l}/sherri/sherri (${d}).png`), y = Math.min(700 / p.width, 850 / p.height), m = p.width * y, S = p.height * y, A = 20, H = c.canvasHeight - S;
+    t.drawImage(p, A, H, m, S);
+    const P = r.roleOffsetX || 0, D = r.roleOffsetY || 0;
+    ee(t, P, D);
+    const w = {
+      left: r.textLeft ?? c.textArea.left,
+      top: r.textTop ?? c.textArea.top,
+      right: r.textRight ?? c.textArea.right,
+      bottom: r.textBottom ?? c.textArea.bottom
+    }, N = w.right - w.left, X = w.bottom - w.top, R = r.maxFontSize ?? c.maxFontSize, j = r.minFontSize ?? c.minFontSize, { fontSize: Y, lines: W } = V(t, e, N, X, R, j);
+    te(t, W, Y, w);
+    const x = document.createElement("canvas");
+    return x.width = Math.round(c.canvasWidth * 0.7), x.height = Math.round(c.canvasHeight * 0.7), x.getContext("2d").drawImage(o, 0, 0, x.width, x.height), x;
+  } catch (s) {
+    throw i("error", "生成图片失败:", s), s;
   }
 }
-async function ie(e) {
-  const t = await ne();
-  return M(e, t);
+async function oe(e) {
+  const r = await re();
+  return O(e, r);
 }
-function P() {
+function B() {
   const e = document.querySelector(".ck.ck-content.ck-editor__editable");
   return e ? e.innerText.trim() : "";
 }
-function se() {
+function ne() {
   try {
-    const t = document.querySelector(".ck.ck-content.ck-editor__editable");
-    if (t && t.ckeditorInstance) {
-      t.ckeditorInstance.setData("");
+    const r = document.querySelector(".ck.ck-content.ck-editor__editable");
+    if (r && r.ckeditorInstance) {
+      r.ckeditorInstance.setData("");
       return;
     }
   } catch {
@@ -274,10 +271,10 @@ function se() {
   const e = document.querySelector(".ck.ck-content.ck-editor__editable");
   e && (e.innerHTML = "<p><br></p>", e.dispatchEvent(new Event("input", { bubbles: !0 })));
 }
-function b(e, t = "info") {
+function b(e, r = "info") {
   const o = document.getElementById("sherri-toast");
   o && o.remove();
-  const r = {
+  const t = {
     info: "#667eea",
     success: "#10b981",
     warning: "#f59e0b",
@@ -288,7 +285,7 @@ function b(e, t = "info") {
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: ${r[t]};
+    background: ${t[r]};
     color: white;
     padding: 12px 24px;
     border-radius: 8px;
@@ -300,25 +297,25 @@ function b(e, t = "info") {
     n.style.opacity = "0", n.style.transition = "opacity 0.3s", setTimeout(() => n.remove(), 300);
   }, 3e3);
 }
-async function ae() {
+async function ie() {
   try {
     const e = await navigator.clipboard.read();
-    for (const t of e) {
-      if (t.types.includes("image/png")) {
-        const o = await t.getType("image/png");
+    for (const r of e) {
+      if (r.types.includes("image/png")) {
+        const o = await r.getType("image/png");
         return i("info", "保存剪贴板: 图片, 大小:", o.size), { type: "image", imageBlob: o };
       }
-      if (t.types.includes("image/jpeg")) {
-        const o = await t.getType("image/jpeg");
+      if (r.types.includes("image/jpeg")) {
+        const o = await r.getType("image/jpeg");
         return i("info", "保存剪贴板: JPEG图片, 大小:", o.size), { type: "image", imageBlob: o };
       }
-      if (t.types.includes("text/html")) {
-        const r = await (await t.getType("text/html")).text();
-        return i("info", "保存剪贴板: HTML, 长度:", r.length), { type: "html", html: r };
+      if (r.types.includes("text/html")) {
+        const t = await (await r.getType("text/html")).text();
+        return i("info", "保存剪贴板: HTML, 长度:", t.length), { type: "html", html: t };
       }
-      if (t.types.includes("text/plain")) {
-        const r = await (await t.getType("text/plain")).text();
-        return i("info", "保存剪贴板: 文本, 长度:", r.length), { type: "text", text: r };
+      if (r.types.includes("text/plain")) {
+        const t = await (await r.getType("text/plain")).text();
+        return i("info", "保存剪贴板: 文本, 长度:", t.length), { type: "text", text: t };
       }
     }
     return i("info", "剪贴板为空或格式不支持"), { type: "empty" };
@@ -326,27 +323,27 @@ async function ae() {
     return i("warn", "读取剪贴板失败:", e), { type: "empty" };
   }
 }
-async function C(e) {
+async function v(e) {
   try {
     if (e.type === "empty") {
       i("info", "剪贴板原本为空，跳过恢复");
       return;
     }
     if (e.type === "image" && e.imageBlob) {
-      const t = new ClipboardItem({
+      const r = new ClipboardItem({
         [e.imageBlob.type]: e.imageBlob
       });
-      await navigator.clipboard.write([t]), i("info", "剪贴板已恢复: 图片");
+      await navigator.clipboard.write([r]), i("info", "剪贴板已恢复: 图片");
       return;
     }
     if (e.type === "html" && e.html) {
-      const t = new Blob([e.html], { type: "text/html" }), o = document.createElement("div");
+      const r = new Blob([e.html], { type: "text/html" }), o = document.createElement("div");
       o.innerHTML = e.html;
-      const r = o.textContent || "", n = new Blob([r], { type: "text/plain" }), a = new ClipboardItem({
-        "text/html": t,
+      const t = o.textContent || "", n = new Blob([t], { type: "text/plain" }), l = new ClipboardItem({
+        "text/html": r,
         "text/plain": n
       });
-      await navigator.clipboard.write([a]), i("info", "剪贴板已恢复: HTML");
+      await navigator.clipboard.write([l]), i("info", "剪贴板已恢复: HTML");
       return;
     }
     if (e.type === "text" && e.text) {
@@ -354,21 +351,21 @@ async function C(e) {
       return;
     }
     i("warn", "无法恢复剪贴板，缓存数据不完整");
-  } catch (t) {
-    i("error", "恢复剪贴板失败:", t);
+  } catch (r) {
+    i("error", "恢复剪贴板失败:", r);
   }
 }
-async function le(e) {
-  const t = document.querySelector(".ck.ck-content.ck-editor__editable");
-  if (!t)
+async function ae(e) {
+  const r = document.querySelector(".ck.ck-content.ck-editor__editable");
+  if (!r)
     return i("error", "找不到编辑器"), !1;
   try {
     const o = await new Promise((n) => {
-      e.toBlob((a) => n(a), "image/png");
+      e.toBlob((l) => n(l), "image/png");
     });
     if (!o)
       return i("error", "canvas.toBlob 返回 null"), !1;
-    i("info", "图片 Blob 大小:", o.size), t.focus(), await new Promise((n) => setTimeout(n, 100));
+    i("info", "图片 Blob 大小:", o.size), r.focus(), await new Promise((n) => setTimeout(n, 100));
     try {
       const n = new ClipboardItem({
         "image/png": o
@@ -378,14 +375,14 @@ async function le(e) {
       return i("error", "Clipboard API 写入失败:", n), !1;
     }
     await new Promise((n) => requestAnimationFrame(n));
-    const r = new KeyboardEvent("keydown", {
+    const t = new KeyboardEvent("keydown", {
       key: "v",
       code: "KeyV",
       ctrlKey: !0,
       bubbles: !0,
       cancelable: !0
     });
-    t.dispatchEvent(r), i("info", "已触发 Ctrl+V");
+    r.dispatchEvent(t), i("info", "已触发 Ctrl+V");
     try {
       document.execCommand("paste"), i("info", "execCommand paste 执行");
     } catch {
@@ -396,51 +393,51 @@ async function le(e) {
     return i("error", "粘贴图片失败:", o), !1;
   }
 }
-function ce() {
+function se() {
   const e = [
     ".send-btn-wrap .send-btn",
     ".send-btn-wrap button",
     ".operation .send-btn:not(.sherri-send-btn)"
   ];
   for (const o of e) {
-    const r = document.querySelector(o);
-    if (r && !r.classList.contains("sherri-send-btn") && !r.closest(".sherri-send-btn"))
-      return i("info", "找到发送按钮:", o, "className:", r.className), r.click(), i("info", "已点击发送按钮"), !0;
+    const t = document.querySelector(o);
+    if (t && !t.classList.contains("sherri-send-btn") && !t.closest(".sherri-send-btn"))
+      return i("info", "找到发送按钮:", o, "className:", t.className), t.click(), i("info", "已点击发送按钮"), !0;
   }
-  const t = document.querySelector(".send-btn-wrap");
-  if (t) {
-    const o = t.querySelectorAll("*");
-    for (const r of o) {
-      const n = r;
+  const r = document.querySelector(".send-btn-wrap");
+  if (r) {
+    const o = r.querySelectorAll("*");
+    for (const t of o) {
+      const n = t;
       if (n.tagName === "BUTTON" || n.classList.contains("send-btn") || n.getAttribute("role") === "button")
         return i("info", "找到发送按钮 (fallback):", n.tagName, n.className), n.click(), !0;
     }
   }
   return i("error", "找不到发送按钮"), !1;
 }
-async function A() {
+async function M() {
   i("info", "开始 sendSherriMessage (粘贴模式)");
-  const e = P();
+  const e = B();
   if (!e) {
     b("请先输入消息内容", "warning");
     return;
   }
   i("info", "输入文本:", e), i("info", "保存剪贴板内容...");
-  const t = await ae();
+  const r = await ie();
   try {
     b("正在生成图片...", "info"), i("info", "开始生成图片...");
-    const o = await ie(e);
-    if (i("info", "图片生成完成, canvas:", o.width, "x", o.height), se(), i("info", "粘贴图片到编辑器..."), !await le(o)) {
-      b("粘贴图片失败", "error"), await C(t);
+    const o = await oe(e);
+    if (i("info", "图片生成完成, canvas:", o.width, "x", o.height), ne(), i("info", "粘贴图片到编辑器..."), !await ae(o)) {
+      b("粘贴图片失败", "error"), await v(r);
       return;
     }
-    if (i("info", "等待图片处理..."), await new Promise((a) => setTimeout(a, 500)), i("info", "点击发送按钮..."), !ce()) {
-      b("找不到发送按钮", "error"), await C(t);
+    if (i("info", "等待图片处理..."), await new Promise((l) => setTimeout(l, 500)), i("info", "点击发送按钮..."), !se()) {
+      b("找不到发送按钮", "error"), await v(r);
       return;
     }
-    b("图片已发送", "success"), i("info", "发送完成"), await new Promise((a) => setTimeout(a, 300)), i("info", "恢复剪贴板内容..."), await C(t);
+    b("图片已发送", "success"), i("info", "发送完成"), await new Promise((l) => setTimeout(l, 300)), i("info", "恢复剪贴板内容..."), await v(r);
   } catch (o) {
-    i("error", "发送失败:", o), b("发送失败: " + o.message, "error"), await C(t);
+    i("error", "发送失败:", o), b("发送失败: " + o.message, "error"), await v(r);
   }
 }
 let h = {
@@ -450,16 +447,16 @@ let h = {
   ctrl: !1,
   alt: !1
 };
-function de(e) {
+function le(e) {
   return h.enabled ? e.key === h.key && e.shiftKey === h.shift && e.ctrlKey === h.ctrl && e.altKey === h.alt : !1;
 }
-function pe() {
+function ce() {
   document.addEventListener("keydown", (e) => {
-    const t = document.querySelector(".ck.ck-content.ck-editor__editable");
-    !t || !t.contains(document.activeElement) && document.activeElement !== t || de(e) && (e.preventDefault(), e.stopPropagation(), A());
+    const r = document.querySelector(".ck.ck-content.ck-editor__editable");
+    !r || !r.contains(document.activeElement) && document.activeElement !== r || le(e) && (e.preventDefault(), e.stopPropagation(), M());
   }, !0), i("info", "快捷键监听已设置");
 }
-async function ue() {
+async function de() {
   try {
     if (typeof window.sherri_message < "u") {
       const e = await window.sherri_message.getConfig() || {};
@@ -469,7 +466,7 @@ async function ue() {
     i("warn", "加载快捷键配置失败:", e);
   }
 }
-function fe() {
+function pe() {
   const e = document.createElement("div");
   if (e.className = "sherri-send-btn", e.innerHTML = '<span class="sherri-btn-inner">Sherri !</span>', !document.getElementById("sherri-btn-style")) {
     const n = document.createElement("style");
@@ -507,154 +504,39 @@ function fe() {
       }
     `, document.head.appendChild(n);
   }
-  function t() {
-    const n = P(), a = e.querySelector(".sherri-btn-inner");
-    a && (n ? a.classList.remove("disabled") : a.classList.add("disabled"));
+  function r() {
+    const n = B(), l = e.querySelector(".sherri-btn-inner");
+    l && (n ? l.classList.remove("disabled") : l.classList.add("disabled"));
   }
-  const o = new MutationObserver(t), r = () => {
+  const o = new MutationObserver(r), t = () => {
     const n = document.querySelector(".ck.ck-content.ck-editor__editable");
-    n && (o.observe(n, { childList: !0, subtree: !0, characterData: !0 }), n.addEventListener("input", t), t());
+    n && (o.observe(n, { childList: !0, subtree: !0, characterData: !0 }), n.addEventListener("input", r), r());
   };
-  return r(), setTimeout(r, 500), e.addEventListener("click", A), e;
+  return t(), setTimeout(t, 500), e.addEventListener("click", M), e;
 }
-function _() {
+function E() {
   const e = document.querySelector(".operation");
   if (!e) return !1;
   if (e.querySelector(".sherri-send-btn")) return !0;
-  const t = e.querySelector(".send-btn-wrap");
-  if (!t) return !1;
-  const o = fe();
-  return t.parentElement?.insertBefore(o, t), i("info", "按钮已注入"), !0;
+  const r = e.querySelector(".send-btn-wrap");
+  if (!r) return !1;
+  const o = pe();
+  return r.parentElement?.insertBefore(o, r), i("info", "按钮已注入"), !0;
 }
-function F() {
+function _() {
   new MutationObserver(() => {
-    _();
+    E();
   }).observe(document.body, {
     childList: !0,
     subtree: !0
-  }), _();
+  }), E();
 }
-function he() {
-  if (document.getElementById("sherri-debug-panel")) return;
-  const e = document.createElement("div");
-  e.id = "sherri-debug-panel", e.innerHTML = `
-    <div id="sherri-debug-header" style="
-      background: #667eea;
-      color: white;
-      padding: 8px 12px;
-      cursor: move;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-    ">
-      <span>Sherri Debug (v2)</span>
-      <button id="sherri-debug-close" style="
-        background: none;
-        border: none;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-      ">x</button>
-    </div>
-    <div id="sherri-debug-content" style="
-      padding: 12px;
-      font-family: monospace;
-      font-size: 12px;
-      max-height: 150px;
-      overflow-y: auto;
-      border-bottom: 1px solid #eee;
-      flex-shrink: 0;
-    ">
-      <div>加载中...</div>
-    </div>
-    <div style="padding: 8px 12px; background: #f0f0f0; font-weight: bold; font-size: 12px; color: #333; flex-shrink: 0;">
-      日志输出
-      <button id="sherri-debug-clear-logs" style="
-        margin-left: 10px;
-        padding: 2px 8px;
-        background: #ef4444;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 11px;
-      ">清空</button>
-    </div>
-    <div id="sherri-debug-logs" style="
-      padding: 8px 12px;
-      font-family: monospace;
-      font-size: 11px;
-      min-height: 100px;
-      flex: 1;
-      overflow-y: auto;
-      background: #fafafa;
-    ">
-      <div style="color: #888;">等待日志...</div>
-    </div>
-    <button id="sherri-debug-refresh" style="
-      margin: 8px 12px 12px;
-      padding: 6px 12px;
-      background: #10b981;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      flex-shrink: 0;
-    ">刷新状态</button>
-  `, e.style.cssText = `
-    position: fixed;
-    top: 100px;
-    right: 20px;
-    width: 350px;
-    height: 450px;
-    min-width: 280px;
-    min-height: 300px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    z-index: 999999;
-    color: #333;
-    resize: both;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  `, document.body.appendChild(e);
-  const t = e.querySelector("#sherri-debug-header");
-  let o = !1, r = 0, n = 0;
-  t.addEventListener("mousedown", (a) => {
-    a.target.id !== "sherri-debug-close" && (o = !0, r = a.clientX - e.offsetLeft, n = a.clientY - e.offsetTop);
-  }), document.addEventListener("mousemove", (a) => {
-    o && (e.style.left = a.clientX - r + "px", e.style.top = a.clientY - n + "px", e.style.right = "auto");
-  }), document.addEventListener("mouseup", () => {
-    o = !1;
-  }), e.querySelector("#sherri-debug-close")?.addEventListener("click", () => {
-    e.remove();
-  }), e.querySelector("#sherri-debug-refresh")?.addEventListener("click", () => {
-    S(), L();
-  }), e.querySelector("#sherri-debug-clear-logs")?.addEventListener("click", () => {
-    g.length = 0, S();
-  }), L(), S(), setInterval(() => {
-    L(), S();
-  }, 1e3);
+async function fe() {
+  i("info", "插件已加载 (v2 - 新版 QQ 适配)"), z(), await de(), ce(), document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", _) : _();
 }
-function L() {
-  const e = document.getElementById("sherri-debug-content");
-  if (!e) return;
-  const t = [], o = V();
-  t.push("<b>== Peer 信息 (渲染进程) ==</b>"), t.push(`chatType: ${o?.chatType ?? "❌ null"} (1=好友, 2=群聊)`), t.push(`peerUid: ${o?.peerUid || "❌ 空"}`), o?.chatType && o?.peerUid ? t.push('<b style="color:green">peer 信息完整，可以发送消息</b>') : t.push('<b style="color:orange">请切换到一个聊天窗口</b>'), t.push("<br><b>== 基础检查 ==</b>"), t.push(`webContentId: ${window.sherri_message?.getWebContentId?.() ?? "❌"}`), t.push(`sherri_message API: ${typeof window.sherri_message < "u" ? "" : "❌"}`), t.push(`nativeCall: ${typeof window.sherri_message?.nativeCall == "function" ? "" : "❌"}`), t.push("<br><b>== 聊天窗口 ==</b>");
-  const r = document.querySelector(".chat-input-area");
-  t.push(`聊天输入区域: ${r ? "" : "❌"}`);
-  const n = document.querySelector(".ml-list");
-  t.push(`消息列表: ${n ? "" : "❌"}`), e.innerHTML = t.join("<br>");
-}
-async function ge() {
-  i("info", "插件已加载 (v2 - 新版 QQ 适配)"), B(), await ue(), pe(), document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", F) : F(), setTimeout(he, 2e3);
-}
-ge();
-const xe = async (e) => {
-  const t = [
+fe();
+const he = async (e) => {
+  const r = [
     { label: "短文本", value: "这是预览测试文本desuwa" },
     { label: "中等文本", value: "我是丰川祥子，来自魔女审判，这是一段中等长度的测试文本desuwa" },
     { label: "长文本", value: "在遥远的魔法世界里，有一个名叫橘雪莉的魔女审判官，她每天都要处理各种各样的魔法案件，这是一段用于测试自动换行功能的超长文本desuwa" },
@@ -666,10 +548,10 @@ const xe = async (e) => {
   let o = {};
   try {
     typeof window.sherri_message < "u" && (o = await window.sherri_message.getConfig() || {});
-  } catch (l) {
-    console.warn("[sherri-message] 读取配置失败:", l);
+  } catch (s) {
+    console.warn("[sherri-message] 读取配置失败:", s);
   }
-  const r = {
+  const t = {
     roleOffsetX: -50,
     roleOffsetY: 50,
     textLeft: 700,
@@ -685,7 +567,7 @@ const xe = async (e) => {
       ctrl: !1,
       alt: !1
     }
-  }, n = o.hotkey || r.hotkey;
+  }, n = o.hotkey || t.hotkey;
   e.innerHTML = `
     <div style="padding: 20px; max-width: 600px; color: #333;">
       <h2 style="margin-bottom: 16px; color: #667eea;">Sherri Message 设置 (v2)</h2>
@@ -733,11 +615,11 @@ const xe = async (e) => {
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <label style="display: flex; align-items: center; gap: 8px; color: #333;">
             <span style="width: 80px;">X 偏移:</span>
-            <input type="number" id="sherri-role-offset-x" value="${o.roleOffsetX ?? r.roleOffsetX}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
+            <input type="number" id="sherri-role-offset-x" value="${o.roleOffsetX ?? t.roleOffsetX}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
           </label>
           <label style="display: flex; align-items: center; gap: 8px; color: #333;">
             <span style="width: 80px;">Y 偏移:</span>
-            <input type="number" id="sherri-role-offset-y" value="${o.roleOffsetY ?? r.roleOffsetY}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
+            <input type="number" id="sherri-role-offset-y" value="${o.roleOffsetY ?? t.roleOffsetY}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
           </label>
         </div>
       </div>
@@ -747,19 +629,19 @@ const xe = async (e) => {
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <label style="display: flex; align-items: center; gap: 8px; color: #333;">
             <span style="width: 80px;">左边距:</span>
-            <input type="number" id="sherri-text-left" value="${o.textLeft ?? r.textLeft}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
+            <input type="number" id="sherri-text-left" value="${o.textLeft ?? t.textLeft}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
           </label>
           <label style="display: flex; align-items: center; gap: 8px; color: #333;">
             <span style="width: 80px;">右边距:</span>
-            <input type="number" id="sherri-text-right" value="${o.textRight ?? r.textRight}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
+            <input type="number" id="sherri-text-right" value="${o.textRight ?? t.textRight}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
           </label>
           <label style="display: flex; align-items: center; gap: 8px; color: #333;">
             <span style="width: 80px;">上边距:</span>
-            <input type="number" id="sherri-text-top" value="${o.textTop ?? r.textTop}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
+            <input type="number" id="sherri-text-top" value="${o.textTop ?? t.textTop}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
           </label>
           <label style="display: flex; align-items: center; gap: 8px; color: #333;">
             <span style="width: 80px;">下边距:</span>
-            <input type="number" id="sherri-text-bottom" value="${o.textBottom ?? r.textBottom}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
+            <input type="number" id="sherri-text-bottom" value="${o.textBottom ?? t.textBottom}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
           </label>
         </div>
       </div>
@@ -769,11 +651,11 @@ const xe = async (e) => {
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <label style="display: flex; align-items: center; gap: 8px; color: #333;">
             <span style="width: 80px;">最大字号:</span>
-            <input type="number" id="sherri-max-font" value="${o.maxFontSize ?? r.maxFontSize}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
+            <input type="number" id="sherri-max-font" value="${o.maxFontSize ?? t.maxFontSize}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
           </label>
           <label style="display: flex; align-items: center; gap: 8px; color: #333;">
             <span style="width: 80px;">最小字号:</span>
-            <input type="number" id="sherri-min-font" value="${o.minFontSize ?? r.minFontSize}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
+            <input type="number" id="sherri-min-font" value="${o.minFontSize ?? t.minFontSize}" style="width: 80px; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
           </label>
         </div>
       </div>
@@ -783,7 +665,7 @@ const xe = async (e) => {
         <label style="display: flex; align-items: center; gap: 8px; color: #333; margin-bottom: 10px;">
           <span style="width: 80px;">测试文本:</span>
           <select id="sherri-test-text" style="flex: 1; padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
-            ${t.map((l, s) => `<option value="${s}">${l.label}</option>`).join("")}
+            ${r.map((s, a) => `<option value="${a}">${s.label}</option>`).join("")}
           </select>
         </label>
       </div>
@@ -803,15 +685,15 @@ const xe = async (e) => {
       </div>
     </div>
   `, e.querySelector("#sherri-save-btn")?.addEventListener("click", async () => {
-    const l = {
+    const s = {
       roleOffsetX: parseInt(e.querySelector("#sherri-role-offset-x").value) || 0,
       roleOffsetY: parseInt(e.querySelector("#sherri-role-offset-y").value) || 0,
-      textLeft: parseInt(e.querySelector("#sherri-text-left").value) || r.textLeft,
-      textRight: parseInt(e.querySelector("#sherri-text-right").value) || r.textRight,
+      textLeft: parseInt(e.querySelector("#sherri-text-left").value) || t.textLeft,
+      textRight: parseInt(e.querySelector("#sherri-text-right").value) || t.textRight,
       textTop: parseInt(e.querySelector("#sherri-text-top").value),
-      textBottom: parseInt(e.querySelector("#sherri-text-bottom").value) || r.textBottom,
-      maxFontSize: parseInt(e.querySelector("#sherri-max-font").value) || r.maxFontSize,
-      minFontSize: parseInt(e.querySelector("#sherri-min-font").value) || r.minFontSize,
+      textBottom: parseInt(e.querySelector("#sherri-text-bottom").value) || t.textBottom,
+      maxFontSize: parseInt(e.querySelector("#sherri-max-font").value) || t.maxFontSize,
+      minFontSize: parseInt(e.querySelector("#sherri-min-font").value) || t.minFontSize,
       hotkey: {
         enabled: e.querySelector("#sherri-hotkey-enabled").checked,
         key: e.querySelector("#sherri-hotkey-key").value,
@@ -822,52 +704,52 @@ const xe = async (e) => {
     };
     try {
       if (typeof window.sherri_message < "u") {
-        await window.sherri_message.setConfig(l), h = l.hotkey;
-        const s = e.querySelector("#sherri-save-btn"), d = s.textContent;
-        s.textContent = "已保存", s.style.background = "#10b981", setTimeout(() => {
-          s.textContent = d, s.style.background = "#667eea";
+        await window.sherri_message.setConfig(s), h = s.hotkey;
+        const a = e.querySelector("#sherri-save-btn"), d = a.textContent;
+        a.textContent = "已保存", a.style.background = "#10b981", setTimeout(() => {
+          a.textContent = d, a.style.background = "#667eea";
         }, 1500);
       }
-    } catch (s) {
-      console.error("[sherri-message] 保存失败:", s);
+    } catch (a) {
+      console.error("[sherri-message] 保存失败:", a);
     }
   }), e.querySelector("#sherri-reset-btn")?.addEventListener("click", async () => {
-    e.querySelector("#sherri-role-offset-x").value = String(r.roleOffsetX), e.querySelector("#sherri-role-offset-y").value = String(r.roleOffsetY), e.querySelector("#sherri-text-left").value = String(r.textLeft), e.querySelector("#sherri-text-right").value = String(r.textRight), e.querySelector("#sherri-text-top").value = String(r.textTop), e.querySelector("#sherri-text-bottom").value = String(r.textBottom), e.querySelector("#sherri-max-font").value = String(r.maxFontSize), e.querySelector("#sherri-min-font").value = String(r.minFontSize), e.querySelector("#sherri-hotkey-enabled").checked = r.hotkey.enabled, e.querySelector("#sherri-hotkey-shift").checked = r.hotkey.shift, e.querySelector("#sherri-hotkey-ctrl").checked = r.hotkey.ctrl, e.querySelector("#sherri-hotkey-alt").checked = r.hotkey.alt, e.querySelector("#sherri-hotkey-key").value = r.hotkey.key, a();
+    e.querySelector("#sherri-role-offset-x").value = String(t.roleOffsetX), e.querySelector("#sherri-role-offset-y").value = String(t.roleOffsetY), e.querySelector("#sherri-text-left").value = String(t.textLeft), e.querySelector("#sherri-text-right").value = String(t.textRight), e.querySelector("#sherri-text-top").value = String(t.textTop), e.querySelector("#sherri-text-bottom").value = String(t.textBottom), e.querySelector("#sherri-max-font").value = String(t.maxFontSize), e.querySelector("#sherri-min-font").value = String(t.minFontSize), e.querySelector("#sherri-hotkey-enabled").checked = t.hotkey.enabled, e.querySelector("#sherri-hotkey-shift").checked = t.hotkey.shift, e.querySelector("#sherri-hotkey-ctrl").checked = t.hotkey.ctrl, e.querySelector("#sherri-hotkey-alt").checked = t.hotkey.alt, e.querySelector("#sherri-hotkey-key").value = t.hotkey.key, l();
     try {
-      typeof window.sherri_message < "u" && (await window.sherri_message.setConfig(r), h = r.hotkey);
+      typeof window.sherri_message < "u" && (await window.sherri_message.setConfig(t), h = t.hotkey);
     } catch {
     }
-    const l = e.querySelector("#sherri-reset-btn"), s = l.textContent;
-    l.textContent = "已重置", l.style.background = "#10b981", setTimeout(() => {
-      l.textContent = s, l.style.background = "#888";
+    const s = e.querySelector("#sherri-reset-btn"), a = s.textContent;
+    s.textContent = "已重置", s.style.background = "#10b981", setTimeout(() => {
+      s.textContent = a, s.style.background = "#888";
     }, 1500);
   });
-  function a() {
-    const l = e.querySelector("#sherri-hotkey-shift").checked, s = e.querySelector("#sherri-hotkey-ctrl").checked, d = e.querySelector("#sherri-hotkey-alt").checked, p = e.querySelector("#sherri-hotkey-key").value, f = `${l ? "Shift+" : ""}${s ? "Ctrl+" : ""}${d ? "Alt+" : ""}${p}`;
-    e.querySelector("#sherri-hotkey-display").textContent = f;
+  function l() {
+    const s = e.querySelector("#sherri-hotkey-shift").checked, a = e.querySelector("#sherri-hotkey-ctrl").checked, d = e.querySelector("#sherri-hotkey-alt").checked, p = e.querySelector("#sherri-hotkey-key").value, u = `${s ? "Shift+" : ""}${a ? "Ctrl+" : ""}${d ? "Alt+" : ""}${p}`;
+    e.querySelector("#sherri-hotkey-display").textContent = u;
   }
-  ["#sherri-hotkey-shift", "#sherri-hotkey-ctrl", "#sherri-hotkey-alt", "#sherri-hotkey-key"].forEach((l) => {
-    e.querySelector(l)?.addEventListener("change", a);
+  ["#sherri-hotkey-shift", "#sherri-hotkey-ctrl", "#sherri-hotkey-alt", "#sherri-hotkey-key"].forEach((s) => {
+    e.querySelector(s)?.addEventListener("change", l);
   }), e.querySelector("#sherri-test-btn")?.addEventListener("click", async () => {
-    const l = e.querySelector("#sherri-preview");
-    l.innerHTML = '<p style="color: #666;">正在生成预览...</p>';
+    const s = e.querySelector("#sherri-preview");
+    s.innerHTML = '<p style="color: #666;">正在生成预览...</p>';
     try {
-      const s = {
+      const a = {
         roleOffsetX: parseInt(e.querySelector("#sherri-role-offset-x").value) || 0,
         roleOffsetY: parseInt(e.querySelector("#sherri-role-offset-y").value) || 0,
-        textLeft: parseInt(e.querySelector("#sherri-text-left").value) || r.textLeft,
-        textRight: parseInt(e.querySelector("#sherri-text-right").value) || r.textRight,
+        textLeft: parseInt(e.querySelector("#sherri-text-left").value) || t.textLeft,
+        textRight: parseInt(e.querySelector("#sherri-text-right").value) || t.textRight,
         textTop: parseInt(e.querySelector("#sherri-text-top").value),
-        textBottom: parseInt(e.querySelector("#sherri-text-bottom").value) || r.textBottom,
-        maxFontSize: parseInt(e.querySelector("#sherri-max-font").value) || r.maxFontSize,
-        minFontSize: parseInt(e.querySelector("#sherri-min-font").value) || r.minFontSize
-      }, d = parseInt(e.querySelector("#sherri-test-text").value), p = t[d].value, u = (await M(p, s)).toDataURL("image/png");
-      l.innerHTML = `<img src="${u}" style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">`;
-    } catch (s) {
-      l.innerHTML = `<p style="color: red;">预览失败: ${s.message}</p>`;
+        textBottom: parseInt(e.querySelector("#sherri-text-bottom").value) || t.textBottom,
+        maxFontSize: parseInt(e.querySelector("#sherri-max-font").value) || t.maxFontSize,
+        minFontSize: parseInt(e.querySelector("#sherri-min-font").value) || t.minFontSize
+      }, d = parseInt(e.querySelector("#sherri-test-text").value), p = r[d].value, f = (await O(p, a)).toDataURL("image/png");
+      s.innerHTML = `<img src="${f}" style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">`;
+    } catch (a) {
+      s.innerHTML = `<p style="color: red;">预览失败: ${a.message}</p>`;
     }
   });
 };
 export {
-  xe as onSettingWindowCreated
+  he as onSettingWindowCreated
 };

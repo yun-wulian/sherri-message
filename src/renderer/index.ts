@@ -1198,6 +1198,7 @@ function observeDOM(): void {
 
 // ========== 调试面板 ==========
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createDebugPanel(): void {
   if (document.getElementById('sherri-debug-panel')) return;
 
@@ -1391,8 +1392,8 @@ async function init(): Promise<void> {
     observeDOM();
   }
 
-  // 延迟创建调试面板
-  setTimeout(createDebugPanel, 2000);
+  // 延迟创建调试面板 (已禁用)
+  // setTimeout(createDebugPanel, 2000);
 }
 
 init();
