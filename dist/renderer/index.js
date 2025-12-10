@@ -370,6 +370,120 @@ function getInputText() {
   return editor.innerText.trim();
 }
 
+// 快捷键配置缓存
+let hotkeyConfig = {
+  enabled: true,
+  key: 'Enter',
+  shift: true,
+  ctrl: false,
+  alt: false
+};
+
+// 发送 Sherri 消息的核心逻辑
+async function sendSherriMessage() {
+  const text = getInputText();
+  if (!text) {
+    showToast('请先输入消息内容', 'warning');
+    return;
+  }
+
+  try {
+    showToast('正在生成图片...', 'info');
+    const canvas = await generateImage(text);
+
+    // 将 canvas 转为 Blob
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+
+    // 复制到剪贴板
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'image/png': blob })
+    ]);
+
+    // 清空输入框
+    clearInput();
+
+    // 等待一小段时间确保剪贴板写入完成
+    await new Promise(r => setTimeout(r, 100));
+
+    // 模拟粘贴到编辑器
+    const editor = document.querySelector('.ck.ck-content.ck-editor__editable');
+    if (editor) {
+      editor.focus();
+
+      // 创建粘贴事件
+      const pasteEvent = new ClipboardEvent('paste', {
+        bubbles: true,
+        cancelable: true,
+        clipboardData: new DataTransfer()
+      });
+
+      // 添加图片到 clipboardData
+      pasteEvent.clipboardData.items.add(new File([blob], 'sherri.png', { type: 'image/png' }));
+
+      editor.dispatchEvent(pasteEvent);
+
+      // 等待图片加载到编辑器
+      await new Promise(r => setTimeout(r, 500));
+
+      // 自动点击发送按钮
+      const sendBtn = document.querySelector('.send-btn-wrap .send-btn, .send-msg');
+      if (sendBtn) {
+        sendBtn.click();
+        showToast('图片已发送', 'success');
+      } else {
+        showToast('图片已粘贴，请点击发送', 'success');
+      }
+    } else {
+      showToast('图片已复制到剪贴板，请 Ctrl+V 粘贴发送', 'success');
+    }
+  } catch (err) {
+    console.error('[sherri-message] 错误:', err);
+    showToast('生成失败: ' + err.message, 'error');
+  }
+}
+
+// 检查快捷键是否匹配
+function checkHotkey(e) {
+  if (!hotkeyConfig.enabled) return false;
+  return e.key === hotkeyConfig.key &&
+         e.shiftKey === hotkeyConfig.shift &&
+         e.ctrlKey === hotkeyConfig.ctrl &&
+         e.altKey === hotkeyConfig.alt;
+}
+
+// 设置快捷键监听
+function setupHotkeyListener() {
+  document.addEventListener('keydown', (e) => {
+    // 只在编辑器聚焦时触发
+    const editor = document.querySelector('.ck.ck-content.ck-editor__editable');
+    if (!editor || !editor.contains(document.activeElement) && document.activeElement !== editor) {
+      return;
+    }
+
+    if (checkHotkey(e)) {
+      e.preventDefault();
+      e.stopPropagation();
+      sendSherriMessage();
+    }
+  }, true);
+
+  console.log('[sherri-message] 快捷键监听已设置');
+}
+
+// 加载快捷键配置
+async function loadHotkeyConfig() {
+  try {
+    if (typeof window.sherri_message !== 'undefined') {
+      const cfg = await window.sherri_message.getConfig() || {};
+      if (cfg.hotkey) {
+        hotkeyConfig = { ...hotkeyConfig, ...cfg.hotkey };
+      }
+    }
+  } catch (err) {
+    console.warn('[sherri-message] 加载快捷键配置失败:', err);
+  }
+}
+
 // 清空输入框 (使用 CKEditor API)
 function clearInput() {
   try {
@@ -434,67 +548,7 @@ function createSherriButton() {
     document.head.appendChild(style);
   }
 
-  btn.addEventListener('click', async () => {
-    const text = getInputText();
-    if (!text) {
-      showToast('请先输入消息内容', 'warning');
-      return;
-    }
-
-    try {
-      showToast('正在生成图片...', 'info');
-      const canvas = await generateImage(text);
-
-      // 将 canvas 转为 Blob
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-
-      // 复制到剪贴板
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob })
-      ]);
-
-      // 清空输入框
-      clearInput();
-
-      // 等待一小段时间确保剪贴板写入完成
-      await new Promise(r => setTimeout(r, 100));
-
-      // 模拟粘贴到编辑器
-      const editor = document.querySelector('.ck.ck-content.ck-editor__editable');
-      if (editor) {
-        editor.focus();
-
-        // 创建粘贴事件
-        const pasteEvent = new ClipboardEvent('paste', {
-          bubbles: true,
-          cancelable: true,
-          clipboardData: new DataTransfer()
-        });
-
-        // 添加图片到 clipboardData
-        pasteEvent.clipboardData.items.add(new File([blob], 'sherri.png', { type: 'image/png' }));
-
-        editor.dispatchEvent(pasteEvent);
-
-        // 等待图片加载到编辑器
-        await new Promise(r => setTimeout(r, 500));
-
-        // 自动点击发送按钮
-        const sendBtn = document.querySelector('.send-btn-wrap .send-btn, .send-msg');
-        if (sendBtn) {
-          sendBtn.click();
-          showToast('图片已发送', 'success');
-        } else {
-          showToast('图片已粘贴，请点击发送', 'success');
-        }
-      } else {
-        showToast('图片已复制到剪贴板，请 Ctrl+V 粘贴发送', 'success');
-      }
-    } catch (err) {
-      console.error('[sherri-message] 错误:', err);
-      showToast('生成失败: ' + err.message, 'error');
-    }
-  });
+  btn.addEventListener('click', sendSherriMessage);
 
   return btn;
 }
@@ -574,8 +628,14 @@ function observeDOM() {
 }
 
 // 初始化
-function init() {
+async function init() {
   console.log('[sherri-message] 插件已加载');
+
+  // 加载快捷键配置
+  await loadHotkeyConfig();
+
+  // 设置快捷键监听
+  setupHotkeyListener();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', observeDOM);
@@ -617,11 +677,53 @@ export const onSettingWindowCreated = async (view) => {
     textBottom: 750,
     maxFontSize: 140,
     minFontSize: 20,
+    hotkey: {
+      enabled: true,
+      key: 'Enter',
+      shift: true,
+      ctrl: false,
+      alt: false
+    }
   };
+
+  // 获取快捷键配置
+  const hk = cfg.hotkey || defaults.hotkey;
 
   view.innerHTML = `
     <div style="padding: 20px; max-width: 600px; color: #333;">
       <h2 style="margin-bottom: 16px; color: #667eea;">Sherri Message 设置</h2>
+
+      <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+        <h3 style="margin-bottom: 12px; font-size: 14px; color: #333;">快捷键设置</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <label style="display: flex; align-items: center; gap: 8px; color: #333;">
+            <input type="checkbox" id="sherri-hotkey-enabled" ${hk.enabled ? 'checked' : ''}>
+            <span>启用快捷键发送</span>
+          </label>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 4px; color: #333;">
+              <input type="checkbox" id="sherri-hotkey-shift" ${hk.shift ? 'checked' : ''}>
+              <span>Shift</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px; color: #333;">
+              <input type="checkbox" id="sherri-hotkey-ctrl" ${hk.ctrl ? 'checked' : ''}>
+              <span>Ctrl</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px; color: #333;">
+              <input type="checkbox" id="sherri-hotkey-alt" ${hk.alt ? 'checked' : ''}>
+              <span>Alt</span>
+            </label>
+            <span style="color: #333;">+</span>
+            <select id="sherri-hotkey-key" style="padding: 4px; color: #333; background: #fff; border: 1px solid #ccc;">
+              <option value="Enter" ${hk.key === 'Enter' ? 'selected' : ''}>Enter</option>
+              <option value="s" ${hk.key === 's' ? 'selected' : ''}>S</option>
+              <option value="d" ${hk.key === 'd' ? 'selected' : ''}>D</option>
+              <option value="e" ${hk.key === 'e' ? 'selected' : ''}>E</option>
+            </select>
+          </div>
+          <p style="color: #666; font-size: 12px; margin: 0;">当前快捷键: <span id="sherri-hotkey-display" style="font-weight: bold;">${hk.shift ? 'Shift+' : ''}${hk.ctrl ? 'Ctrl+' : ''}${hk.alt ? 'Alt+' : ''}${hk.key}</span></p>
+        </div>
+      </div>
 
       <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
         <h3 style="margin-bottom: 12px; font-size: 14px; color: #333;">角色名称位置偏移</h3>
@@ -710,11 +812,20 @@ export const onSettingWindowCreated = async (view) => {
       textBottom: parseInt(view.querySelector('#sherri-text-bottom').value) || defaults.textBottom,
       maxFontSize: parseInt(view.querySelector('#sherri-max-font').value) || defaults.maxFontSize,
       minFontSize: parseInt(view.querySelector('#sherri-min-font').value) || defaults.minFontSize,
+      hotkey: {
+        enabled: view.querySelector('#sherri-hotkey-enabled').checked,
+        key: view.querySelector('#sherri-hotkey-key').value,
+        shift: view.querySelector('#sherri-hotkey-shift').checked,
+        ctrl: view.querySelector('#sherri-hotkey-ctrl').checked,
+        alt: view.querySelector('#sherri-hotkey-alt').checked
+      }
     };
 
     try {
       if (typeof window.sherri_message !== 'undefined') {
         await window.sherri_message.setConfig(newCfg);
+        // 更新全局快捷键配置
+        hotkeyConfig = newCfg.hotkey;
         // 静默保存，显示短暂的成功提示
         const btn = view.querySelector('#sherri-save-btn');
         const originalText = btn.textContent;
@@ -740,10 +851,17 @@ export const onSettingWindowCreated = async (view) => {
     view.querySelector('#sherri-text-bottom').value = defaults.textBottom;
     view.querySelector('#sherri-max-font').value = defaults.maxFontSize;
     view.querySelector('#sherri-min-font').value = defaults.minFontSize;
+    view.querySelector('#sherri-hotkey-enabled').checked = defaults.hotkey.enabled;
+    view.querySelector('#sherri-hotkey-shift').checked = defaults.hotkey.shift;
+    view.querySelector('#sherri-hotkey-ctrl').checked = defaults.hotkey.ctrl;
+    view.querySelector('#sherri-hotkey-alt').checked = defaults.hotkey.alt;
+    view.querySelector('#sherri-hotkey-key').value = defaults.hotkey.key;
+    updateHotkeyDisplay();
 
     try {
       if (typeof window.sherri_message !== 'undefined') {
         await window.sherri_message.setConfig(defaults);
+        hotkeyConfig = defaults.hotkey;
       }
     } catch (err) {}
 
@@ -756,6 +874,21 @@ export const onSettingWindowCreated = async (view) => {
       btn.textContent = originalText;
       btn.style.background = '#888';
     }, 1500);
+  });
+
+  // 更新快捷键显示
+  function updateHotkeyDisplay() {
+    const shift = view.querySelector('#sherri-hotkey-shift').checked;
+    const ctrl = view.querySelector('#sherri-hotkey-ctrl').checked;
+    const alt = view.querySelector('#sherri-hotkey-alt').checked;
+    const key = view.querySelector('#sherri-hotkey-key').value;
+    const display = `${shift ? 'Shift+' : ''}${ctrl ? 'Ctrl+' : ''}${alt ? 'Alt+' : ''}${key}`;
+    view.querySelector('#sherri-hotkey-display').textContent = display;
+  }
+
+  // 快捷键选项变化时更新显示
+  ['#sherri-hotkey-shift', '#sherri-hotkey-ctrl', '#sherri-hotkey-alt', '#sherri-hotkey-key'].forEach(sel => {
+    view.querySelector(sel).addEventListener('change', updateHotkeyDisplay);
   });
 
   // 测试预览按钮
