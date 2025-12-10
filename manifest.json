@@ -1,0 +1,26 @@
+{
+  "manifest_version": 4,
+  "type": "extension",
+  "name": "Sherri Message",
+  "slug": "sherri-message",
+  "description": "将文字消息转换为魔女审判风格图片发送",
+  "version": "1.0.0",
+  "icon": null,
+  "thumb": null,
+  "authors": [
+    {
+      "name": "YunWuLian",
+      "link": "https://github.com/YunWuLian"
+    }
+  ],
+  "platform": [
+    "win32",
+    "linux",
+    "darwin"
+  ],
+  "injects": {
+    "main": "./dist/main/index.js",
+    "preload": "./dist/preload/index.js",
+    "renderer": "./dist/renderer/index.js"
+  }
+}
