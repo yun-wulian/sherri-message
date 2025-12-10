@@ -527,7 +527,7 @@ function createSherriButton() {
         align-items: center;
         justify-content: center;
         padding: 5px 12px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #0066CC;
         color: white;
         border-radius: 4px;
         font-size: 12px;
@@ -536,9 +536,13 @@ function createSherriButton() {
         transition: all 0.2s;
         white-space: nowrap;
       }
-      .sherri-btn-inner:hover {
-        transform: scale(1.05);
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+      .sherri-btn-inner.disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .sherri-btn-inner:not(.disabled):hover {
+        filter: brightness(1.1);
+        box-shadow: 0 2px 8px rgba(0, 102, 204, 0.4);
       }
       @keyframes sherri-toast-in {
         from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
@@ -547,6 +551,33 @@ function createSherriButton() {
     `;
     document.head.appendChild(style);
   }
+
+  // 更新按钮禁用状态
+  function updateBtnState() {
+    const text = getInputText();
+    const inner = btn.querySelector('.sherri-btn-inner');
+    if (inner) {
+      if (text) {
+        inner.classList.remove('disabled');
+      } else {
+        inner.classList.add('disabled');
+      }
+    }
+  }
+
+  // 监听输入框变化
+  const observer = new MutationObserver(updateBtnState);
+  const checkEditor = () => {
+    const editor = document.querySelector('.ck.ck-content.ck-editor__editable');
+    if (editor) {
+      observer.observe(editor, { childList: true, subtree: true, characterData: true });
+      editor.addEventListener('input', updateBtnState);
+      updateBtnState();
+    }
+  };
+  checkEditor();
+  // 延迟再检查一次，确保编辑器已加载
+  setTimeout(checkEditor, 500);
 
   btn.addEventListener('click', sendSherriMessage);
 
