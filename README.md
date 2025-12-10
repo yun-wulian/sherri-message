@@ -32,7 +32,7 @@ LiteLoaderQQNT 插件 - 将文字消息转换为「魔女审判」风格图片�
 
 ## 截图
 
-![preview](https://github.com/yun-wulian/sherri-message/assets/placeholder.png)
+![preview](https://github.com/yun-wulian/sherri-message/placeholder.png)
 
 ## 致谢
 
