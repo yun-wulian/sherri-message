@@ -1,5 +1,6 @@
 // Sherri Message - 预加载脚本
 const { contextBridge, ipcRenderer } = require('electron');
+const crypto = require('crypto');
 
 // 获取 webContentsId (Euphony 风格)
 let webContentsId;
