@@ -537,7 +537,7 @@ function createSherriButton() {
         white-space: nowrap;
       }
       .sherri-btn-inner.disabled {
-        opacity: 0.5;
+        color: rgba(255, 255, 255, 0.5);
         cursor: default;
       }
       .sherri-btn-inner:not(.disabled):hover {
